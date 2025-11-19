@@ -184,19 +184,25 @@ export default function Index() {
           <View style={styles.forecast}>
             {forecast.map((day, index) => (
               <View key={index} style={styles.forecastDetails}>
-                <Text style={styles.forecastDay}>{new Date(day.dt * 1000).toLocaleDateString('en-Us', { weekday: 'long' })}</Text>
-                <Image style={styles.forecastImage} alt={day.weather[0].description} source={ Icons[day.weather[0].icon] || "01d.png" }/>
-                <View style={styles.forecastTemp}>
-                  <Text style={styles.forecastMinMaxTemp}>{Math.round((day.main.temp_max - 273.15))}°C</Text>
-                  <Text style={styles.forecastMinMaxTemp}> | </Text>
-                  <Text style={styles.forecastMinMaxTemp}>{Math.round((day.main.temp_min - 273.15))}°C</Text>
+                <View style={{ width: "33%", alignItems: "flex-start" }}>
+                  <Text style={styles.forecastDay}>{new Date(day.dt * 1000).toLocaleDateString('en-Us', { weekday: 'long' })}</Text>
+                </View>
+                <View style={{ width: "33%", alignItems: "center" }}>
+                  <Image style={styles.forecastImage} alt={day.weather[0].description} source={ Icons[day.weather[0].icon] || "01d.png" }/>
+                </View>
+                <View style={{ width: "33%", alignItems: "flex-end"}}>
+                  <View style={styles.forecastTemp}>
+                    <Text style={styles.forecastMinMaxTemp}>{Math.round((day.main.temp_max - 273.15))}°C</Text>
+                    <Text style={styles.forecastMinMaxTemp}> | </Text>
+                    <Text style={styles.forecastMinMaxTemp}>{Math.round((day.main.temp_min - 273.15))}°C</Text>
+                  </View>
                 </View>
               </View>
             ))}
           </View>
         </>
       )}
-
+      
     </ScrollView>
   );
 }
@@ -317,35 +323,32 @@ const styles = StyleSheet.create ({
     borderRadius: 10,
   },
   forecast: {
-    width: "80%",
-    alignContent: "center"
+    width: "70%",
   },
   forecastDetails: {
     flexDirection: "row",
     marginBottom: 10,
+    width: "100%",
+    justifyContent: "space-evenly",
   },
   forecastDay: {
-    flex: 1,
     fontFamily: "GlacialIndifference-Regular",
     fontSize: 15,
     letterSpacing: 1.5,
     textTransform: "uppercase",
   },
   forecastImage: {
-    flex: 1,
-    width: 20,
     height: 20,
     resizeMode: "contain",
     alignSelf: "center",
   },
   forecastTemp: {
-    flex: 1,
     flexDirection: "row",
   },
   forecastMinMaxTemp: {
     fontFamily: "GlacialIndifference-Regular",
     fontSize: 15,
     letterSpacing: 1.5,
-    justifyContent: "flex-end",
+    justifyContent: "center",
   },
 })
