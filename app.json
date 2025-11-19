@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "weather-app",
-    "slug": "weather-app",
+    "name": "SunUp",
+    "slug": "SunUp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/01d.png",

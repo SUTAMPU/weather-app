@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-// ============ SOMETHING ============
+// ============ TYPES ============
 interface WeatherData {
   dt: number;
   name: string;
+  visibility: number;
   sys: { country: string }
   weather: [{ description: string, icon: string }]
   main: { temp: number, temp_min: number, temp_max: number, humidity: number }
@@ -13,10 +14,11 @@ interface WeatherData {
 
 interface ForecastData {
   dt: number;
-  weather: [{ icon: string }]
+  weather: [{ description: string, icon: string }]
   main: { temp: number, temp_min: number, temp_max: number }
 }
 
+// ============ ICONS ============
 const Icons: Record<string, any> = {
   // Day
   "01d": require("../assets/images/01d.png"),   // Clear sky
@@ -41,10 +43,10 @@ const Icons: Record<string, any> = {
   "50n": require("../assets/images/50.png"),    // Mist     
 }
 
-// ============ SOMETHING ============
+// ============ MAIN COMPONENT ============
 export default function Index() {
 
-  const apiKey = process.env.API_KEY;
+  const apiKey = process.env.EXPO_PUBLIC_API_KEY;
 
   const [city, setCity] = useState("London");
   const [search, setSearch] = useState("");
@@ -96,37 +98,41 @@ export default function Index() {
     setSearch("");
   }
 
-  // When setLoading(true)
-  if (loading)
-    return (
-      <Text>Loading...</Text>
-  );
-
   // ============ JSX ============
   return (
     <ScrollView contentContainerStyle={{
-      justifyContent: "center",
-      alignItems: "center",
+      alignItems: "center"
       }}>
 
       {/* Search bar */} 
       <View style={styles.searchForm}>
-        <Image alt="search-icon" source={ require("../assets/images/search-icon.png")} />
+        <Image style={styles.searchIcon} alt="search-icon" source={ require("../assets/images/search-icon.png")} />
         <TextInput
           onChangeText={text => setSearch(text)}
+          onSubmitEditing={() => handleSearch()}
           value={search}
           style={styles.searchInput}
           placeholder="Search for a city"
           placeholderTextColor="rgba(0, 0, 0, 0.5)"
           underlineColorAndroid="rgba(0, 0, 0, 0)"
-          selectionColor="rgba(0, 0, 0, 0)"
+          selectionColor="rgba(0, 0, 0, 1)"
         />
       </View>
 
       {/* Error */}
-      {error && 
-        <Text>{error}</Text>
+      {error && (
+        <View>
+          <Text style= {{ fontFamily: "LeagueSpartan-Regular" }}>{error}</Text>
+        </View>
+      )
       }
+
+      {/* Loading */}
+      {loading && (
+        <View>
+          <Text style= {{ fontFamily: "LeagueSpartan-Regular" }}>Loading...</Text>
+        </View>
+      )}
 
       {/* Weather data */}
       {weather && (
@@ -149,10 +155,47 @@ export default function Index() {
           </View>
 
           <Image style={styles.conditionImage} alt={weather.weather[0].description} source={ Icons[weather.weather[0].icon] || "01d.png" } />
+
+          <View style={styles.otherDetails}>
+            <View style={styles.detail}>
+              <Text style={styles.detailData}>{weather.wind.speed}m/s</Text>
+              <Text style={styles.detailHead}>Wind Speed</Text>
+            </View>
+            <View style={styles.detail}>
+              <Text style={styles.detailData}>{weather.main.humidity}%</Text>
+              <Text style={styles.detailHead}>Humidity</Text>
+            </View>
+            <View style={styles.detail}>
+              <Text style={styles.detailData}>{Math.round(weather.visibility / 1000) / 10}km</Text>
+              <Text style={styles.detailHead}>Visibility</Text>
+            </View>
+          </View>
         </>
       )}
 
+      <View style={styles.separator}>
+        <Image alt="separator-icon" source={ require("../assets/images/separator-icon.png")}/>
+        <View style={styles.separatorLine}></View>
+      </View>
+
       {/* Forecast data */}
+      {forecast.length > 0 && (
+        <>
+          <View style={styles.forecast}>
+            {forecast.map((day, index) => (
+              <View key={index} style={styles.forecastDetails}>
+                <Text style={styles.forecastDay}>{new Date(day.dt * 1000).toLocaleDateString('en-Us', { weekday: 'long' })}</Text>
+                <Image style={styles.forecastImage} alt={day.weather[0].description} source={ Icons[day.weather[0].icon] || "01d.png" }/>
+                <View style={styles.forecastTemp}>
+                  <Text style={styles.forecastMinMaxTemp}>{Math.round((day.main.temp_max - 273.15))}°C</Text>
+                  <Text style={styles.forecastMinMaxTemp}> | </Text>
+                  <Text style={styles.forecastMinMaxTemp}>{Math.round((day.main.temp_min - 273.15))}°C</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </>
+      )}
 
     </ScrollView>
   );
@@ -161,11 +204,12 @@ export default function Index() {
 // ============ STYLING ============
 const styles = StyleSheet.create ({
   searchForm: {
-    maxWidth: "40%",
+    width: "40%",
     flexDirection: "row",
     justifyContent: "flex-start",
     alignItems: "center",
     margin: 10,
+    marginTop: 20,
     padding: 5,
     borderRadius: 100,
     boxShadow: [{
@@ -174,6 +218,11 @@ const styles = StyleSheet.create ({
       blurRadius: 10,
       color: "rgba(0, 0, 0, 0.2)",
     }],
+  },
+  searchIcon: {
+    flex: 0,
+    width: 12,
+    height: 12,
   },
   searchInput: {
     fontFamily: "GlacialIndifference-Regular",
@@ -186,8 +235,7 @@ const styles = StyleSheet.create ({
     margin: 10,
   },
   location: {
-    fontFamily: "LeagueSpartan",
-    fontWeight: "bold",
+    fontFamily: "LeagueSpartan-Bold",
     fontSize: 20,
     textTransform: "uppercase",
   },
@@ -200,35 +248,30 @@ const styles = StyleSheet.create ({
   },
   weather: {
     alignItems: "center",
+    margin: 0,
   },
   weatherSimple: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    margin: 10,
+    margin: 0,
   },
   temp: {
-    fontFamily: "LeagueSpartan",
+    fontFamily: "LeagueSpartan-Bold",
     fontSize: 96,
-    fontWeight: "bold",
-    lineHeight: 1,
   },
   tempSymbol: {
-    fontFamily: "LeagueSpartan",
+    fontFamily: "LeagueSpartan-Regular",
     fontSize: 128,
-    fontWeight: "regular",
-    marginRight: 20,
+    marginRight: 10,
   },
   weatherDetailed: {
     flexWrap: "wrap",
     alignItems: "flex-start",
     width: 100,
-
   },
   condition: {
-    fontFamily: "LeagueSpartan",
+    fontFamily: "LeagueSpartan-Bold",
     fontSize: 24,
-    fontWeight: "bold",
     textTransform: "capitalize",
     textAlign: "left",
     marginBottom: 5,
@@ -239,8 +282,70 @@ const styles = StyleSheet.create ({
     margin: 0,
   },
   conditionImage: {
-    width: 200,
+    width: 175,
+    height: 175,
     margin: 20,
     resizeMode: "contain",
-  }
+  },
+  otherDetails: {
+    flexDirection: "row",
+    gap: 20,
+    margin: 0,
+  },
+  detail: {
+    alignItems: "center",
+  },
+  detailData: {
+    fontFamily: "LeagueSpartan-Bold",
+    fontSize: 20,
+  },
+  detailHead: {
+    fontFamily: "GlacialIndifference-Regular",
+    fontSize: 12,
+    letterSpacing: 1.5,
+    color: "rgba(0, 0, 0, 0.5)",
+  },
+  separator: {
+    width: "70%",
+    alignItems: "center",
+    margin: 30,
+  },
+  separatorLine: {
+    width: "100%",
+    height: 10,
+    backgroundColor: "black",
+    borderRadius: 10,
+  },
+  forecast: {
+    width: "80%",
+    alignContent: "center"
+  },
+  forecastDetails: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  forecastDay: {
+    flex: 1,
+    fontFamily: "GlacialIndifference-Regular",
+    fontSize: 15,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+  },
+  forecastImage: {
+    flex: 1,
+    width: 20,
+    height: 20,
+    resizeMode: "contain",
+    alignSelf: "center",
+  },
+  forecastTemp: {
+    flex: 1,
+    flexDirection: "row",
+  },
+  forecastMinMaxTemp: {
+    fontFamily: "GlacialIndifference-Regular",
+    fontSize: 15,
+    letterSpacing: 1.5,
+    justifyContent: "flex-end",
+  },
 })

@@ -7,7 +7,8 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
     const [loaded, error] = useFonts({
-    'LeagueSpartan': require('../assets/fonts/LeagueSpartan.ttf'),
+    'LeagueSpartan-Regular': require('../assets/fonts/LeagueSpartan-Regular.ttf'),
+    'LeagueSpartan-Bold': require('../assets/fonts/LeagueSpartan-Bold.ttf'),
     'GlacialIndifference-Regular': require('../assets/fonts/GlacialIndifference-Regular.otf'),
     'GlacialIndifference-Bold': require('../assets/fonts/GlacialIndifference-Bold.otf'),
   });
